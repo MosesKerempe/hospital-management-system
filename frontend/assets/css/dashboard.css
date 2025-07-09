@@ -1,0 +1,139 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f0f4fb;
+}
+
+/* Top header bar */
+.main-header {
+    background: linear-gradient(to right, #3a0ca3, #2196f3);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 40px;
+    margin-right: 10px;
+}
+
+.hospital-name {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-right .logout-btn {
+    padding: 8px 14px;
+    background-color: transparent;
+    border: 1px solid white;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+
+.header-right .logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Main layout */
+.dashboard-wrapper {
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 200px;
+    background-color: #2f3e9e;
+    color: white;
+    padding-top: 20px;
+    height: calc(100vh - 58px);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    padding: 15px 20px;
+    font-weight: bold;
+}
+
+.sidebar ul li.active {
+    background-color: #1a237e;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    display: block;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Main content */
+.dashboard-main {
+    flex: 1;
+    padding: 40px;
+    text-align: center;
+}
+
+.dashboard-main h2 {
+    margin-bottom: 40px;
+    color: #333;
+}
+
+.card-group {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    width: 250px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.03);
+}
+
+.card img {
+    width: 40px;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    color: #2f3e9e;
+    margin-bottom: 12px;
+}
+
+.card .btn {
+    padding: 8px 14px;
+    background-color: #2f3e9e;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.card .btn:hover {
+    background-color: #1a237e;
+}
