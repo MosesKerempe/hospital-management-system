@@ -13,6 +13,55 @@ $patient_name = $_SESSION['patient_name'];
     <meta charset="UTF-8">
     <title>Patient Dashboard - MODERN HMS</title>
     <link rel="stylesheet" href="../../assets/css/dashboard.css">
+    <style>
+        /* Optional: style for dynamic content area */
+        #dashboard-content {
+            margin-top: 30px;
+        }
+    </style>
+    <script>
+    // Load content dynamically into dashboard-content div
+    function loadDashboardContent(page) {
+        const contentDiv = document.getElementById('dashboard-content');
+        contentDiv.innerHTML = '<div style="text-align:center;padding:40px;">Loading...</div>';
+        fetch(page)
+            .then(response => response.text())
+            .then(html => {
+                contentDiv.innerHTML = html;
+            })
+            .catch(() => {
+                contentDiv.innerHTML = '<div style="color:red;text-align:center;">Failed to load content.</div>';
+            });
+    }
+
+    // Optional: highlight active sidebar link
+    function setActiveSidebar(link) {
+        document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active'));
+        link.parentElement.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Attach click handlers to sidebar links
+        document.querySelectorAll('.sidebar ul li a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadDashboardContent(this.getAttribute('href'));
+                setActiveSidebar(this);
+            });
+        });
+
+        // Attach click handlers to dashboard cards
+        document.querySelectorAll('.card a.btn').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadDashboardContent(this.getAttribute('href'));
+                // Optionally highlight sidebar
+                const sidebarLink = document.querySelector('.sidebar ul li a[href="' + this.getAttribute('href') + '"]');
+                if (sidebarLink) setActiveSidebar(sidebarLink);
+            });
+        });
+    });
+    </script>
 </head>
 <body>
 
@@ -61,6 +110,8 @@ $patient_name = $_SESSION['patient_name'];
                     <a href="prescriptions.php" class="btn">View Prescriptions</a>
                 </div>
             </div>
+            <!-- Dynamic content area -->
+            <div id="dashboard-content"></div>
         </main>
     </div>
 </body>

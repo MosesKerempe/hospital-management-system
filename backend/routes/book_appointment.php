@@ -2,27 +2,25 @@
 session_start();
 require_once '../config/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $patient_id = $_SESSION['patient_id'] ?? null;
-    $doctor_id = $_POST['doctor_id'] ?? '';
-    $appointment_date = $_POST['appointment_date'] ?? '';
-    $appointment_time = $_POST['appointment_time'] ?? '';
-    $fee = $_POST['consultancy_fee'] ?? 0;
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['book_appointment'])) {
+    try {
+        $stmt = $pdo->prepare("INSERT INTO appointmenttable 
+            (PatientID, FirstName, LastName, Gender, Email, Contact, Doctor, DoctorFees, AppointmentDate, AppointmentTime) 
+            SELECT PatientId, FirstName, LastName, Gender, Email, Contact, ?, ?, ?, ? 
+            FROM patientregistration WHERE PatientId = ?");
 
-    if ($patient_id && $doctor_id && $appointment_date && $appointment_time) {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, doctor_fee) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$patient_id, $doctor_id, $appointment_date, $appointment_time, $fee]);
+        $stmt->execute([
+            $_POST['doctor'],
+            $_POST['fees'],
+            $_POST['date'],
+            $_POST['time'],
+            $_POST['patient_id']
+        ]);
 
-            $_SESSION['appointment_message'] = "✅ Appointment booked successfully!";
-        } catch (PDOException $e) {
-            $_SESSION['appointment_message'] = "❌ Error: " . $e->getMessage();
-        }
-    } else {
-        $_SESSION['appointment_message'] = "❌ Please fill all fields.";
+        $_SESSION['success'] = "Appointment booked successfully!";
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Error: " . $e->getMessage();
     }
-
-    header("Location: ../../frontend/views/patient/book_appointment.php");
-    exit();
 }
-?>
+header("Location: ../../frontend/views/patient/book_appointment.php");
+exit();

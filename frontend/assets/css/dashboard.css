@@ -1,7 +1,8 @@
 body {
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f0f4fb;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    background: linear-gradient(120deg, #f0f4fb 60%, #e0e7ff 100%);
+    min-height: 100vh;
 }
 
 /* Top header bar */
@@ -11,7 +12,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
+    padding: 16px 32px;
+    box-shadow: 0 2px 12px rgba(58,12,163,0.08);
 }
 
 .header-left {
@@ -20,120 +22,193 @@ body {
 }
 
 .logo {
-    width: 40px;
-    margin-right: 10px;
+    width: 48px;
+    margin-right: 14px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(33,150,243,0.15);
 }
 
 .hospital-name {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
+    letter-spacing: 1px;
 }
 
 .header-right .logout-btn {
-    padding: 8px 14px;
-    background-color: transparent;
-    border: 1px solid white;
-    border-radius: 4px;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
+    border: none;
+    border-radius: 6px;
     text-decoration: none;
     color: white;
     font-weight: bold;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(255,88,88,0.08);
+    cursor: pointer;
 }
 
 .header-right .logout-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(90deg, #f09819 0%, #ff5858 100%);
+    box-shadow: 0 4px 16px rgba(255,88,88,0.15);
 }
 
 /* Main layout */
 .dashboard-wrapper {
     display: flex;
+    min-height: calc(100vh - 60px);
 }
 
 /* Sidebar */
 .sidebar {
-    width: 200px;
-    background-color: #2f3e9e;
+    width: 220px;
+    background: linear-gradient(180deg, #2f3e9e 80%, #3a0ca3 100%);
     color: white;
-    padding-top: 20px;
-    height: calc(100vh - 58px);
+    padding-top: 30px;
+    height: calc(100vh - 60px);
+    box-shadow: 2px 0 12px rgba(47,62,158,0.07);
+    position: sticky;
+    top: 60px;
 }
 
 .sidebar ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 .sidebar ul li {
-    padding: 15px 20px;
-    font-weight: bold;
+    padding: 16px 28px;
+    font-weight: 500;
+    font-size: 17px;
+    border-left: 4px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
 }
 
-.sidebar ul li.active {
-    background-color: #1a237e;
+.sidebar ul li.active,
+.sidebar ul li:hover {
+    background: rgba(255,255,255,0.09);
+    border-left: 4px solid #f09819;
 }
 
 .sidebar ul li a {
-    color: white;
+    color: inherit;
     text-decoration: none;
     display: block;
+    width: 100%;
+    transition: color 0.2s;
 }
 
 .sidebar ul li a:hover {
-    text-decoration: underline;
+    color: #f09819;
+    text-decoration: none;
 }
 
 /* Main content */
 .dashboard-main {
     flex: 1;
-    padding: 40px;
+    padding: 48px 5vw 48px 5vw;
     text-align: center;
+    background: transparent;
 }
 
 .dashboard-main h2 {
     margin-bottom: 40px;
-    color: #333;
+    color: #2f3e9e;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 .card-group {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 36px;
     flex-wrap: wrap;
+    margin-bottom: 40px;
 }
 
 .card {
-    background: white;
-    border-radius: 10px;
-    padding: 25px;
-    width: 250px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #ffffff 80%, #e0e7ff 100%);
+    border-radius: 18px;
+    padding: 32px 24px 28px 24px;
+    width: 270px;
+    box-shadow: 0 8px 32px rgba(47,62,158,0.10);
     text-align: center;
-    transition: transform 0.2s;
+    transition: transform 0.18s, box-shadow 0.18s;
+    position: relative;
+    overflow: hidden;
 }
 
 .card:hover {
-    transform: scale(1.03);
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 16px 40px rgba(33,150,243,0.13);
 }
 
 .card img {
-    width: 40px;
-    margin-bottom: 15px;
+    width: 54px;
+    margin-bottom: 18px;
+    filter: drop-shadow(0 2px 8px rgba(33,150,243,0.10));
 }
 
 .card h3 {
     color: #2f3e9e;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .card .btn {
-    padding: 8px 14px;
-    background-color: #2f3e9e;
+    padding: 10px 22px;
+    background: linear-gradient(90deg, #3a0ca3 0%, #2196f3 100%);
     color: white;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: bold;
     display: inline-block;
+    font-size: 1rem;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(33,150,243,0.10);
+    border: none;
+    transition: background 0.2s, box-shadow 0.2s;
 }
 
 .card .btn:hover {
-    background-color: #1a237e;
+    background: linear-gradient(90deg, #2196f3 0%, #3a0ca3 100%);
+    box-shadow: 0 4px 16px rgba(33,150,243,0.18);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        box-shadow: none;
+        padding-top: 10px;
+    }
+    .dashboard-main {
+        padding: 32px 2vw 32px 2vw;
+    }
+    .card-group {
+        gap: 18px;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-main h2 {
+        font-size: 1.2rem;
+    }
+    .card {
+        width: 95vw;
+        padding: 18px 8px 18px 8px;
+    }
+    .sidebar ul li {
+        font-size: 15px;
+        padding: 10px 12px;
+    }
 }
