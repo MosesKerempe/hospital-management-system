@@ -112,6 +112,16 @@ try {
     </script>
 </head>
 <body>
+    <!-- Top Header -->
+    <header class="main-header">
+        <div class="header-left">
+            <img src="../../assets/images/logo.png" class="logo" alt="Logo">
+            <span class="hospital-name">MODERN HMS</span>
+        </div>
+        <div class="header-right">
+            <a href="../../logout/logged_out.php" class="logout-btn">Logout</a>
+        </div>
+    </header>
     <div class="dashboard-wrapper">
         <!-- Sidebar Only -->
         <?php require_once '../../includes/sidebar.php'; ?>

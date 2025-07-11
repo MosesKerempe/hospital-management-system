@@ -1,16 +1,14 @@
 <?php
 require_once '../config/db.php';
+header('Content-Type: application/json');
 
-$specialization = $_GET['specialization'] ?? ''; // use lowercase to match JS
-
-try {
-    $stmt = $conn->prepare("SELECT UserName, DoctorFees FROM Doctors WHERE Specialization = ?");
-    $stmt->execute([$specialization]);
+$specialization = $_GET['specialization'] ?? '';
+if ($specialization) {
+    $stmt = $conn->prepare("SELECT UserName, DoctorFees FROM Doctors WHERE Specialization = :spec");
+    $stmt->bindParam(':spec', $specialization);
+    $stmt->execute();
     $doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    header('Content-Type: application/json');
     echo json_encode($doctors);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+} else {
+    echo json_encode([]);
 }
