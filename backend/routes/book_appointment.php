@@ -2,53 +2,73 @@
 session_start();
 require_once '../config/db.php';
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['book_appointment'])) {
-    try {
-        $stmt = $pdo->prepare("INSERT INTO appointmenttable 
-            (PatientID, FirstName, LastName, Gender, Email, Contact, Doctor, DoctorFees, AppointmentDate, AppointmentTime) 
-            SELECT PatientId, FirstName, LastName, Gender, Email, Contact, ?, ?, ?, ? 
-            FROM patientregistration WHERE PatientId = ?");
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-        $stmt->execute([
-            $_POST['doctor'],
-            $_POST['fees'],
-            $_POST['date'],
-            $_POST['time'],
-            $_POST['patient_id']
-        ]);
-
-        $_SESSION['success'] = "Appointment booked successfully!";
-    } catch (Exception $e) {
-        $_SESSION['error'] = "Error: " . $e->getMessage();
-    }
-} else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['patient_id'])) {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['book_appointment']) && isset($_SESSION['patient_id'])) {
     $patient_id = $_SESSION['patient_id'];
     $specialization = $_POST['specialization'];
-    $doctor = $_POST['doctor'];
+    $doctor_username = $_POST['doctor'];
     $fee = $_POST['doctor_fee'];
     $date = $_POST['appointment_date'];
     $time = $_POST['appointment_time'];
 
-    // Get DoctorID from username
-    $stmt = $conn->prepare("SELECT DoctorID FROM Doctors WHERE UserName = :doctor LIMIT 1");
-    $stmt->bindParam(':doctor', $doctor);
-    $stmt->execute();
-    $doctor_row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($doctor_row) {
-        $doctor_id = $doctor_row['DoctorID'];
-        $sql = "INSERT INTO appointmenttable (PatientID, DoctorID, AppointmentDate, AppointmentTime, CurrentStatus) VALUES (:patient_id, :doctor_id, :date, :time, 'Pending')";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':patient_id', $patient_id);
-        $stmt->bindParam(':doctor_id', $doctor_id);
-        $stmt->bindParam(':date', $date);
-        $stmt->bindParam(':time', $time);
-        if ($stmt->execute()) {
-            header('Location: ../../frontend/views/patient/appointment_history.php?success=1');
+    try {
+        // Fetch patient info
+        $stmt = $conn->prepare("SELECT FirstName, LastName, Gender, Email, Contact FROM patientregistration WHERE PatientId = :pid");
+        $stmt->bindParam(':pid', $patient_id);
+        $stmt->execute();
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$patient) {
+            $_SESSION['error'] = "Patient not found.";
+            header("Location: ../../frontend/views/patient/book_appointment.php?error=patient_not_found");
             exit();
         }
+
+        // Fetch doctor ID
+        $stmt = $conn->prepare("SELECT DoctorID FROM Doctors WHERE UserName = :uname");
+        $stmt->bindParam(':uname', $doctor_username);
+        $stmt->execute();
+        $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$doctor) {
+            $_SESSION['error'] = "Doctor not found.";
+            header("Location: ../../frontend/views/patient/book_appointment.php?error=doctor_not_found");
+            exit();
+        }
+
+        $doctor_id = $doctor['DoctorID'];
+
+        // Insert into Appointment table
+        $insert = $conn->prepare("INSERT INTO Appointment 
+            (PatientID, DoctorID, FirstName, LastName, Gender, Email, Contact, Doctor, DoctorFees, AppointmentDate, AppointmentTime, UserStatus, DoctorStatus)
+            VALUES 
+            (:pid, :did, :fname, :lname, :gender, :email, :contact, :doctorName, :fees, :adate, :atime, 1, 1)");
+
+        $insert->execute([
+            ':pid' => $patient_id,
+            ':did' => $doctor_id,
+            ':fname' => $patient['FirstName'],
+            ':lname' => $patient['LastName'],
+            ':gender' => $patient['Gender'],
+            ':email' => $patient['Email'],
+            ':contact' => $patient['Contact'],
+            ':doctorName' => $doctor_username,
+            ':fees' => $fee,
+            ':adate' => $date,
+            ':atime' => $time
+        ]);
+
+        header("Location: ../../frontend/views/patient/book_appointment.php?success=1");
+        exit();
+
+    } catch (PDOException $e) {
+        $_SESSION['error'] = "Error: " . $e->getMessage();
+        header("Location: ../../frontend/views/patient/book_appointment.php?error=exception");
+        exit();
     }
-    header('Location: ../../frontend/views/patient/book_appointment.php?error=1');
+} else {
+    header("Location: ../../frontend/views/patient/book_appointment.php");
     exit();
 }
-header('Location: ../../frontend/views/patient/book_appointment.php');
-exit();

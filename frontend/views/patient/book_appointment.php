@@ -74,94 +74,82 @@ try {
             background: #2980b9;
         }
     </style>
-    <script>
-    function fetchDoctorsBySpecialization(specialization) {
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", "../../../backend/routes/get_doctors.php?specialization=" + encodeURIComponent(specialization), true);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                const doctorDropdown = document.getElementById("doctor");
-                const feeField = document.getElementById("doctor_fee");
-
-                doctorDropdown.innerHTML = "";
-                response.forEach(doctor => {
-                    const option = document.createElement("option");
-                    option.value = doctor.UserName;
-                    option.text = doctor.UserName;
-                    option.setAttribute("data-fee", doctor.DoctorFees);
-                    doctorDropdown.appendChild(option);
-                });
-
-                // Auto set first doctor fee
-                if (response.length > 0) {
-                    feeField.value = response[0].DoctorFees;
-                } else {
-                    feeField.value = '';
-                }
-            }
-        };
-        xhr.send();
-    }
-
-    function updateFee() {
-        const doctorSelect = document.getElementById("doctor");
-        const selected = doctorSelect.options[doctorSelect.selectedIndex];
-        document.getElementById("doctor_fee").value = selected ? (selected.getAttribute("data-fee") || '') : '';
-    }
-    </script>
 </head>
 <body>
-    <!-- Top Header -->
-    <header class="main-header">
-        <div class="header-left">
-            <img src="../../assets/images/logo.png" class="logo" alt="Logo">
-            <span class="hospital-name">MODERN HMS</span>
+<div class="dashboard-wrapper">
+    <?php require_once '../../includes/sidebar.php'; ?>
+    <main class="dashboard-main">
+        <div class="form-container">
+            <h3>Book My Appointment</h3>
+            <form action="../../../backend/routes/book_appointment.php" method="POST">
+                <label for="specialization">Specialization:</label>
+                <select name="specialization" id="specialization" required onchange="fetchDoctorsBySpecialization(this.value)">
+                    <option value="">-- Select Specialization --</option>
+                    <?php foreach ($specializations as $spec): ?>
+                        <option value="<?= htmlspecialchars($spec) ?>"><?= htmlspecialchars($spec) ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <label for="doctor">Doctor:</label>
+                <select name="doctor" id="doctor" required onchange="updateFee()">
+                    <option value="">-- Select Doctor --</option>
+                </select>
+
+                <label for="doctor_fee">Consultancy Fees:</label>
+                <input type="text" id="doctor_fee" name="doctor_fee" readonly placeholder="Select a doctor">
+
+                <label for="appointment_date">Appointment Date:</label>
+                <input type="date" name="appointment_date" required min="<?= date('Y-m-d') ?>">
+
+                <label for="appointment_time">Appointment Time:</label>
+                <select name="appointment_time" required>
+                    <option value="08:00:00">8:00 AM</option>
+                    <option value="10:00:00">10:00 AM</option>
+                    <option value="12:00:00">12:00 PM</option>
+                    <option value="14:00:00">2:00 PM</option>
+                    <option value="16:00:00">4:00 PM</option>
+                </select>
+
+                <button type="submit" name="book_appointment">Create New Entry</button>
+            </form>
         </div>
-        <div class="header-right">
-            <a href="../../logout/logged_out.php" class="logout-btn">Logout</a>
-        </div>
-    </header>
-    <div class="dashboard-wrapper">
-        <!-- Sidebar Only -->
-        <?php require_once '../../includes/sidebar.php'; ?>
-        <!-- Main Content -->
-        <main class="dashboard-main">
-            <div class="form-container">
-                <h3>Book My Appointment</h3>
-                <form action="../../../backend/routes/book_appointment.php" method="POST">
-                    <label for="specialization">Specialization:</label>
-                    <select name="specialization" id="specialization" required onchange="fetchDoctorsBySpecialization(this.value)">
-                        <option value="">-- Select Specialization --</option>
-                        <?php foreach ($specializations as $spec): ?>
-                            <option value="<?= htmlspecialchars($spec) ?>"><?= htmlspecialchars($spec) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+    </main>
+</div>
 
-                    <label for="doctor">Doctor:</label>
-                    <select name="doctor" id="doctor" required onchange="updateFee()">
-                        <option value="">-- Select Doctor --</option>
-                    </select>
+<!-- Popup on success -->
+<?php if (isset($_GET['success'])): ?>
+<script>
+    alert("Appointment booked successfully!");
+</script>
+<?php endif; ?>
 
-                    <label for="doctor_fee">Consultancy Fees:</label>
-                    <input type="text" id="doctor_fee" name="doctor_fee" readonly placeholder="Select a doctor">
+<script>
+function fetchDoctorsBySpecialization(specialization) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "../../../backend/routes/get_doctors.php?specialization=" + encodeURIComponent(specialization), true);
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            const doctorDropdown = document.getElementById("doctor");
+            doctorDropdown.innerHTML = "<option value=''>-- Select Doctor --</option>";
+            response.forEach(doctor => {
+                const option = document.createElement("option");
+                option.value = doctor.UserName;
+                option.text = doctor.UserName;
+                option.setAttribute("data-fee", doctor.DoctorFees);
+                doctorDropdown.appendChild(option);
+            });
+            document.getElementById("doctor_fee").value = ""; // Clear fee
+        }
+    };
+    xhr.send();
+}
 
-                    <label for="appointment_date">Appointment Date:</label>
-                    <input type="date" name="appointment_date" required min="<?= date('Y-m-d') ?>">
-
-                    <label for="appointment_time">Appointment Time:</label>
-                    <select name="appointment_time" required>
-                        <option value="08:00:00">8:00 AM</option>
-                        <option value="10:00:00">10:00 AM</option>
-                        <option value="12:00:00">12:00 PM</option>
-                        <option value="14:00:00">2:00 PM</option>
-                        <option value="16:00:00">4:00 PM</option>
-                    </select>
-
-                    <button type="submit">Create New Entry</button>
-                </form>
-            </div>
-        </main>
-    </div>
+function updateFee() {
+    const doctorSelect = document.getElementById("doctor");
+    const selected = doctorSelect.options[doctorSelect.selectedIndex];
+    document.getElementById("doctor_fee").value = selected ? selected.getAttribute("data-fee") : '';
+}
+</script>
 </body>
 </html>
