@@ -1,3 +1,14 @@
+<?php
+// Start session to clear any data
+session_start();
+
+// Unset all session variables
+$_SESSION = [];
+
+// Destroy the session
+session_destroy();
+?>
+<!-- 
 <!DOCTYPE html>
 <html>
 <head>
@@ -31,10 +42,10 @@
         .btn:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-    </style>
+    </style> -->
 </head>
 <body>
     <div class="logout-box">You have logged out.</div>
-    <a href="../auth/patient_login.php" class="btn">Back to Login Page</a>
+    <a href="../../home/index.php" class="btn">Back to Login Page</a>
 </body>
 </html>

@@ -8,10 +8,11 @@ if (!isset($_SESSION['patient_id'])) {
 require_once '../../../backend/config/db.php';
 
 $patient_id = $_SESSION['patient_id'];
+
 try {
-    $sql = "SELECT a.AppointmentID, a.AppointmentDate, a.AppointmentTime, a.CurrentStatus, d.UserName AS DoctorName, d.DoctorFees
-            FROM appointmenttable a
-            JOIN Doctors d ON a.DoctorID = d.DoctorID
+    $sql = "SELECT a.ID, a.AppointmentDate, a.AppointmentTime, a.UserStatus, a.DoctorStatus,
+                   a.DoctorFees, a.Doctor AS DoctorName
+            FROM Appointment a
             WHERE a.PatientID = :patient_id
             ORDER BY a.AppointmentDate DESC, a.AppointmentTime DESC";
     $stmt = $conn->prepare($sql);
@@ -47,6 +48,22 @@ try {
         .history-table tr:nth-child(even) {
             background: #f9f9f9;
         }
+
+        .alert {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +76,13 @@ try {
             <a href="../../logout/logged_out.php" class="logout-btn">Logout</a>
         </div>
     </header>
+
+    <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
+        <div class="alert alert-success">✅ Appointment booked successfully!</div>
+    <?php elseif (isset($_GET['error'])): ?>
+        <div class="alert alert-error">❌ <?= htmlspecialchars($_GET['error']) ?></div>
+    <?php endif; ?>
+
     <div class="dashboard-wrapper">
         <?php require_once '../../includes/sidebar.php'; ?>
         <main class="dashboard-main">
@@ -84,10 +108,22 @@ try {
                             <tr>
                                 <td><?= $i + 1 ?></td>
                                 <td><?= htmlspecialchars($row['DoctorName']) ?></td>
-                                <td><?= htmlspecialchars($row['DoctorFees']) ?></td>
+                                <td>Ksh <?= htmlspecialchars($row['DoctorFees']) ?></td>
                                 <td><?= htmlspecialchars($row['AppointmentDate']) ?></td>
                                 <td><?= htmlspecialchars(substr($row['AppointmentTime'], 0, 5)) ?></td>
-                                <td><?= htmlspecialchars($row['CurrentStatus']) ?></td>
+                                <td>
+                                    <?php
+                                    if ($row['UserStatus'] == 1 && $row['DoctorStatus'] == 1) {
+                                        echo "<span style='color: green;'>Active</span>";
+                                    } elseif ($row['UserStatus'] == 0) {
+                                        echo "<span style='color: red;'>Cancelled by Patient</span>";
+                                    } elseif ($row['DoctorStatus'] == 0) {
+                                        echo "<span style='color: red;'>Cancelled by Doctor</span>";
+                                    } else {
+                                        echo "Pending";
+                                    }
+                                    ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -95,3 +131,5 @@ try {
             </table>
         </main>
     </div>
+</body>
+</html>

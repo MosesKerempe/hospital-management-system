@@ -6,7 +6,10 @@
     <li><a href="/MODERN_HMS/frontend/views/admin/appointment_details.php">Appointments</a></li>
     <li><a href="/MODERN_HMS/frontend/views/admin/prescription_list.php">Prescriptions</a></li>
     <li><a href="/MODERN_HMS/frontend/views/admin/add_doctor.php">Add Doctor</a></li>
+    
+    <!-- ✅ Consistent Delete Doctor link -->
     <li><a href="/MODERN_HMS/frontend/views/admin/delete_doctor.php">Delete Doctor</a></li>
+
     <li><a href="/MODERN_HMS/frontend/views/admin/queries.php">Queries</a></li>
   </ul>
 </div>
