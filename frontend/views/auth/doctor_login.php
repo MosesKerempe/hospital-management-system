@@ -1,142 +1,112 @@
 <?php
 session_start();
 require_once '../../../backend/config/db.php';
-require_once '../../includes/header.php';
-require_once '../../includes/nav.php';
 
-$error = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    $stmt = $conn->prepare("SELECT * FROM doctors WHERE UserName = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $doctor = $result->fetch_assoc();
-
-    if ($doctor && $password === $doctor['Password']) {
-        $_SESSION['doctor_username'] = $doctor['UserName'];
-        $_SESSION['doctor_id'] = $doctor['id'];
-        header("Location: ../doctor/dashboard.php");
-        exit;
-    } else {
-        $error = "Invalid username or password.";
-    }
-}
+$error = $_SESSION['login_error'] ?? '';
+unset($_SESSION['login_error']); // clear after use
 ?>
 
-<!-- ✅ Internal CSS styles -->
-<style>
-    .login-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 60px 20px;
-        min-height: 80vh;
-        background-color: #f0f4f7;
-    }
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Login - MODERN HMS</title>
+    <link rel="stylesheet" href="../../assets/css/forms.css">
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <style>
+        .login-container {
+            width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
 
-    .login-form-box {
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        padding: 35px;
-        max-width: 420px;
-        width: 100%;
-    }
+        h2 {
+            text-align: center;
+            color: #3a0ca3;
+        }
 
-    .form-title {
-        text-align: center;
-        margin-bottom: 25px;
-        font-size: 26px;
-        color: #2c3e50;
-    }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-    .form-group {
-        margin-bottom: 20px;
-    }
+        .btn-login {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #3a0ca3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
 
-    label {
-        display: block;
-        margin-bottom: 8px;
-        color: #333;
-    }
+        .btn-login:hover {
+            background: #2f3e9e;
+        }
 
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 15px;
-    }
+        .error {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
 
-    .btn-submit {
-        width: 100%;
-        padding: 12px;
-        background-color: #007bff;
-        color: white;
-        font-weight: bold;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-    }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #007BFF;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
 
-    .btn-submit:hover {
-        background-color: #0069d9;
-    }
+        .back-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
 
-    .error-message {
-        color: red;
-        margin-bottom: 15px;
-        text-align: center;
-    }
+        main {
+            padding-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
 
-    .form-footer {
-        text-align: center;
-        margin-top: 20px;
-    }
+    <!-- ✅ Include Navbar/Header -->
+    <?php include_once '../../includes/nav.php'; ?>
+    <?php include_once '../../includes/header.php'; ?>
 
-    .back-link {
-        color: #007bff;
-        text-decoration: none;
-    }
+    <!-- Login Form -->
+    <main>
+        <div class="login-container">
+            <h2>Doctor Login</h2>
 
-    .back-link:hover {
-        text-decoration: underline;
-    }
-</style>
-
-<!-- ✅ Doctor Login Form -->
-<div class="login-container">
-    <div class="login-form-box">
-        <h2 class="form-title">Doctor Login</h2>
-
-        <?php if ($error): ?>
-            <div class="error-message"><?= $error ?></div>
-        <?php endif; ?>
-
-        <form method="POST" action="">
-            <div class="form-group">
+            <form action="../../../backend/auth/doctor_login.php" method="POST">
                 <label for="username">Username:</label>
-                <input type="text" name="username" id="username" class="form-control" required>
-            </div>
+                <input type="text" name="username" required>
 
-            <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" name="password" id="password" class="form-control" required>
-            </div>
+                <input type="password" name="password" required>
 
-            <button type="submit" class="btn-submit">Login</button>
-        </form>
+                <button type="submit" class="btn-login">Login</button>
+            </form>
 
-        <div class="form-footer">
-            <a href="../../views/home/index.php" class="back-link">← Back to Home</a>
+            <?php if (!empty($error)) : ?>
+                <div class="error"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
 
+            <a href="../home/index.php" class="back-link">← Back to Home</a>
         </div>
-    </div>
-</div>
+    </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+    <!-- ✅ Include Footer -->
+    <?php include_once '../../includes/footer.php'; ?>
+
+</body>
+</html>

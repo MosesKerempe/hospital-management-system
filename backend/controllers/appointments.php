@@ -17,4 +17,9 @@ class AppointmentController {
     public function addAppointment($data) {
         return $this->appointmentModel->createAppointment($data);
     }
+
+    // ✅ NEW METHOD: Fetch appointments by doctor email
+    public function getAppointmentsByDoctor($email) {
+        return $this->appointmentModel->getAppointmentsByDoctorEmail($email);
+    }
 }

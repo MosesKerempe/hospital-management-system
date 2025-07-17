@@ -1,18 +1,20 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
+// backend/controllers/PrescriptionController.php
 require_once __DIR__ . '/../models/PrescriptionModel.php';
 
-try {
-    $model = new PrescriptionModel($conn);
-    $prescriptions = $model->getAllPrescriptions();
+class PrescriptionController {
+    private $model;
+    public function __construct() {
+        $this->model = new PrescriptionModel();
+    }
 
-    echo json_encode([
-        'status' => 'success',
-        'data' => $prescriptions
-    ]);
-} catch (Exception $e) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => $e->getMessage()
-    ]);
+    // Save a new prescription
+    public function addPrescription(array $data): bool {
+        return $this->model->createPrescription($data);
+    }
+
+    // Get all for a doctor
+    public function getDoctorPrescriptions(string $doctorName): array {
+        return $this->model->getByDoctor($doctorName);
+    }
 }

@@ -4,23 +4,29 @@ require_once '../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['patient_id'])) {
     $patient_id = $_SESSION['patient_id'];
-    $specialization = $_POST['specialization'];
-    $doctor_username = $_POST['doctor'];
-    $doctor_fee = $_POST['doctor_fee'];
-    $date = $_POST['appointment_date'];
-    $time = $_POST['appointment_time'];
+    $specialization = $_POST['specialization'] ?? '';
+    $doctor_username = $_POST['doctor'] ?? '';
+    $doctor_fee = $_POST['doctor_fee'] ?? '';
+    $date = $_POST['appointment_date'] ?? '';
+    $time = $_POST['appointment_time'] ?? '';
 
     try {
+        // Validate required fields
+        if (!$specialization || !$doctor_username || !$doctor_fee || !$date || !$time) {
+            throw new Exception("Missing required fields.");
+        }
+
         // Fetch patient info
         $stmt = $conn->prepare("SELECT FirstName, LastName, Gender, Email, Contact FROM PatientRegistration WHERE PatientId = :id");
         $stmt->bindParam(':id', $patient_id);
         $stmt->execute();
         $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (!$patient) {
             throw new Exception("Patient not found.");
         }
 
-        // Insert appointment without DoctorID
+        // Insert appointment
         $insert = $conn->prepare("INSERT INTO Appointment 
             (PatientID, FirstName, LastName, Gender, Email, Contact, Doctor, DoctorFees, AppointmentDate, AppointmentTime, UserStatus, DoctorStatus)
             VALUES 
@@ -33,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['patient_id'])) {
             ':gender' => $patient['Gender'],
             ':email' => $patient['Email'],
             ':contact' => $patient['Contact'],
-            ':doctor' => $doctor_username,
+            ':doctor' => $doctor_username,  // This is matched with `Doctor` field in Appointment table
             ':fees' => $doctor_fee,
             ':date' => $date,
             ':time' => $time

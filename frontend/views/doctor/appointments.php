@@ -1,59 +1,118 @@
 <?php
 session_start();
-require_once '../../backend/config/db.php';
-require_once '../../backend/helpers/auth_helper.php';
+if (!isset($_SESSION['doctor_name'], $_SESSION['doctor_id'])) {
+    header('Location: ../auth/doctor_login.php');
+    exit();
+}
+require_once '../../../backend/models/AppointmentModel.php';
+require_once '../../../backend/config/db.php';
 
-checkDoctorLogin(); // ensure doctor is logged in
-$doctorUsername = $_SESSION['doctor_username'];
-
-$query = "SELECT * FROM appointments WHERE Doctor = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("s", $doctorUsername);
-$stmt->execute();
-$result = $stmt->get_result();
+$model = new AppointmentModel();
+$error = '';
+try {
+    $appointments = $model->getAppointmentsByDoctorUsername($_SESSION['doctor_name']);
+} catch (Throwable $e) {
+    $appointments = [];
+    $error = $e->getMessage();
+}
 ?>
 
-<?php include('../includes/doctor_layout.php'); ?>
+<?php include_once '../../includes/doctor_layout.php'; ?>
 
-<div class="container">
-    <h2 class="mt-4">My Appointments</h2>
-    <table class="table table-striped mt-3">
-        <thead class="thead-dark">
-            <tr>
-                <th>Appointment ID</th>
-                <th>Patient Name</th>
-                <th>Email</th>
-                <th>Contact</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th colspan="2">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php while($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?= htmlspecialchars($row['ID']) ?></td>
-                <td><?= htmlspecialchars($row['FirstName'] . ' ' . $row['LastName']) ?></td>
-                <td><?= htmlspecialchars($row['Email']) ?></td>
-                <td><?= htmlspecialchars($row['Contact']) ?></td>
-                <td><?= htmlspecialchars($row['AppointmentDate']) ?></td>
-                <td><?= htmlspecialchars($row['AppointmentTime']) ?></td>
-                <td><?= htmlspecialchars($row['UserStatus'] === '1' && $row['DoctorStatus'] === '1' ? 'Active' : 'Cancelled') ?></td>
-                <td>
-                    <form action="../../backend/routes/cancel_appointment.php" method="POST">
-                        <input type="hidden" name="appointment_id" value="<?= $row['ID'] ?>">
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Cancel this appointment?')">Cancel</button>
-                    </form>
-                </td>
-                <td>
-                    <form action="prescription_form.php" method="GET">
-                        <input type="hidden" name="appointment_id" value="<?= $row['ID'] ?>">
-                        <button class="btn btn-success btn-sm">Prescribe</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endwhile; ?>
-        </tbody>
+    <h2>My Appointments</h2>
+
+    <style>
+      .appointments-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #fff;
+      }
+      .appointments-table th,
+      .appointments-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      .appointments-table th {
+        background: #2f3e9e;
+        color: white;
+      }
+      .btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .btn-cancel {
+        background: #f44336; color: white;
+      }
+      .btn-cancel:hover {
+        background: #d32f2f;
+      }
+      .btn-prescribe {
+        background: #28a745; color: white;
+      }
+      .btn-prescribe:hover {
+        background: #218838;
+      }
+      .error-msg {
+        color: red;
+        margin: 20px 0;
+        text-align: center;
+      }
+    </style>
+
+    <?php if ($error): ?>
+      <div class="error-msg">Error: <?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
+    <table class="appointments-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Patient Name</th><th>Gender</th><th>Email</th>
+          <th>Contact</th><th>Doctor</th><th>Fees</th><th>Date</th>
+          <th>Time</th><th>User Status</th><th>Doctor Status</th>
+          <th>Action</th><th>Prescribe</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php if (empty($appointments)): ?>
+          <tr><td colspan="13">No appointments found.</td></tr>
+        <?php else: foreach ($appointments as $i => $a): ?>
+          <tr>
+            <td><?= $i+1 ?></td>
+            <td><?= htmlspecialchars("$a[FirstName] $a[LastName]") ?></td>
+            <td><?= htmlspecialchars($a['Gender']) ?></td>
+            <td><?= htmlspecialchars($a['Email']) ?></td>
+            <td><?= htmlspecialchars($a['Contact']) ?></td>
+            <td><?= htmlspecialchars($a['Doctor']) ?></td>
+            <td><?= htmlspecialchars($a['DoctorFees']) ?></td>
+            <td><?= htmlspecialchars($a['AppointmentDate']) ?></td>
+            <td><?= htmlspecialchars(substr($a['AppointmentTime'],0,5)) ?></td>
+            <td><?= htmlspecialchars($a['UserStatus']) ?></td>
+            <td><?= htmlspecialchars($a['DoctorStatus']) ?></td>
+            <td>
+              <form action="../../../backend/routes/cancel_appointment.php" method="POST">
+                <input type="hidden" name="appointment_id" value="<?= $a['AppointmentID'] ?>">
+                <button class="btn btn-cancel">Cancel</button>
+              </form>
+            </td>
+            <td>
+              <form action="prescription_form.php" method="GET">
+                <input type="hidden" name="appointment_id" value="<?= $a['AppointmentID'] ?>">
+                <button class="btn btn-prescribe">Prescribe</button>
+              </form>
+            </td>
+          </tr>
+        <?php endforeach; endif; ?>
+      </tbody>
     </table>
-</div>
+
+  </main>            <!-- close dashboard-main -->
+</div>               <!-- close dashboard-wrapper -->
+
+<?php include_once '../../includes/footer.php'; ?>
+</body>
+</html>

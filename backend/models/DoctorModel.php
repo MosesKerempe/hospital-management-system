@@ -38,11 +38,26 @@ class DoctorModel {
         $sql = "INSERT INTO Doctors (UserName, Email, Password, Specialization, DoctorFees) 
                 VALUES (:username, :email, :password, :specialization, :fees)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(":username", $username);
-        $stmt->bindParam(":email", $email);
-        $stmt->bindParam(":password", $password); // Note: Hash before passing
-        $stmt->bindParam(":specialization", $specialization);
-        $stmt->bindParam(":fees", $fees);
+        $stmt->bindParam(":username",      $username);
+        $stmt->bindParam(":email",         $email);
+        $stmt->bindParam(":password",      $password);        // Make sure to hash before passing
+        $stmt->bindParam(":specialization",$specialization);
+        $stmt->bindParam(":fees",          $fees);
         return $stmt->execute();
+    }
+
+    // Authenticate doctor using username (instead of email)
+    public function authenticateByUsername($username, $password) {
+        $sql = "SELECT * FROM Doctors WHERE UserName = :username LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(":username", $username);
+        $stmt->execute();
+        $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($doctor && password_verify($password, $doctor['Password'])) {
+            return $doctor;
+        }
+
+        return false;
     }
 }
