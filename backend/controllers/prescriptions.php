@@ -1,20 +1,27 @@
 <?php
-// backend/controllers/PrescriptionController.php
-require_once __DIR__ . '/../models/PrescriptionModel.php';
+require_once '../config/db.php';
+require_once '../models/PrescriptionModel.php';
 
 class PrescriptionController {
     private $model;
-    public function __construct() {
-        $this->model = new PrescriptionModel();
+
+    public function __construct($db) {
+        $this->model = new PrescriptionModel($db);
     }
 
-    // Save a new prescription
-    public function addPrescription(array $data): bool {
-        return $this->model->createPrescription($data);
+    public function getAll() {
+        return $this->model->getAllPrescriptions();
     }
 
-    // Get all for a doctor
-    public function getDoctorPrescriptions(string $doctorName): array {
-        return $this->model->getByDoctor($doctorName);
+    public function getByPatient($patientId) {
+        return $this->model->getPrescriptionsByPatientId($patientId);
+    }
+
+    public function getByDoctor($doctorName) {
+        return $this->model->getPrescriptionsByDoctorName($doctorName);
+    }
+
+    public function create($data) {
+        return $this->model->addPrescription($data);
     }
 }

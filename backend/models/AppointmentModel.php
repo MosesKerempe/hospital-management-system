@@ -104,4 +104,37 @@ class AppointmentModel {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * ✅ Get single appointment by ID (for prescription form usage).
+     *
+     * @param int $id
+     * @return array|null
+     */
+    public function getAppointmentById(int $id): ?array {
+        $stmt = $this->conn->prepare("
+            SELECT 
+                ID AS AppointmentID,
+                PatientID,
+                FirstName,
+                LastName,
+                Gender,
+                Email,
+                Contact,
+                Doctor,
+                DoctorFees,
+                AppointmentDate,
+                AppointmentTime,
+                UserStatus,
+                DoctorStatus
+            FROM Appointment
+            WHERE ID = :id
+            LIMIT 1
+        ");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $appointment ?: null;
+    }
 }

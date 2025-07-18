@@ -1,56 +1,75 @@
 <?php
-ini_set('display_errors',1);
-ini_set('display_startup_errors',1);
+// backend/routes/add_prescription.php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../models/PrescriptionModel.php';
-require_once __DIR__ . '/../notifications/email_notifier.php';
-require_once __DIR__ . '/../notifications/sms_notifier.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SESSION['doctor_name'])) {
-    header('Location: ../../frontend/views/auth/doctor_login.php');
-    exit();
-}
+require_once '../config/db.php';
+require_once '../models/PrescriptionModel.php';
+require_once '../models/AppointmentModel.php';
 
-// Gather and sanitize
-$data = [
-    'DoctorName'       => $_SESSION['doctor_name'],
-    'PatientID'        => filter_var($_POST['patient_id'], FILTER_VALIDATE_INT),
-    'FirstName'        => trim($_POST['first_name']),
-    'LastName'         => trim($_POST['last_name']),
-    'AppointmentDate'  => $_POST['date'],
-    'AppointmentTime'  => $_POST['time'],
-    'Disease'          => trim($_POST['disease']),
-    'Allergy'          => trim($_POST['allergy']),
-    'Prescription'     => trim($_POST['prescription']),
-];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $doctorName = $_SESSION['doctor_name'] ?? '';
+    $appointmentId = $_POST['appointment_id'] ?? null;
+    $disease = trim($_POST['disease'] ?? '');
+    $allergy = trim($_POST['allergy'] ?? '');
+    $prescription = trim($_POST['prescription'] ?? '');
 
-$model = new PrescriptionModel();
+    if (!$doctorName || !$appointmentId || empty($disease) || empty($prescription)) {
+        $_SESSION['prescription_error'] = "Please fill all required fields.";
+        header("Location: ../../frontend/views/doctor/prescription_form.php?appointment_id=$appointmentId");
+        exit;
+    }
 
-try {
-    $model->createPrescription($data);
+    $appointmentModel = new AppointmentModel();
+    $appointment = null;
 
-    // Notify patient via email & SMS
-    $emailer = new EmailNotifier();
-    $smser   = new SmsNotifier();
-    $patientEmail = ''; // fetch from DB if needed
-    $patientPhone = ''; // fetch from DB if needed
+    try {
+        $appointments = $appointmentModel->getAllAppointments();
+        foreach ($appointments as $app) {
+            if ($app['AppointmentID'] == $appointmentId) {
+                $appointment = $app;
+                break;
+            }
+        }
 
-    $subject = "New Prescription from Dr. {$data['DoctorName']}";
-    $body    = "Dear {$data['FirstName']},\n\n"
-             . "Dr. {$data['DoctorName']} has submitted your prescription:\n"
-             . "{$data['Prescription']}\n\n"
-             . "Please review it in your dashboard.\n\n"
-             . "Regards,\nMODERN HMS";
+        if (!$appointment) {
+            throw new Exception("Appointment not found.");
+        }
 
-    $emailer->send($patientEmail, $subject, $body);
-    $smser->send($patientPhone, "Your prescription is ready. Check your MODERN HMS dashboard.");
+        // Prepare data for prescription
+        $data = [
+            'DoctorName'       => $doctorName,
+            'PatientID'        => $appointment['PatientID'],
+            'FirstName'        => $appointment['FirstName'],
+            'LastName'         => $appointment['LastName'],
+            'AppointmentDate'  => $appointment['AppointmentDate'],
+            'AppointmentTime'  => $appointment['AppointmentTime'],
+            'Disease'          => $disease,
+            'Allergy'          => $allergy,
+            'Prescription'     => $prescription
+        ];
 
-    header('Location: ../../frontend/views/doctor/prescription_list.php?success=1');
-    exit();
-} catch (Exception $e) {
-    // Log error as needed
-    die("Failed to save prescription: " . $e->getMessage());
+        $model = new PrescriptionModel($conn);
+        $result = $model->addPrescription($data);
+
+        if ($result) {
+            $_SESSION['prescription_success'] = "Prescription submitted successfully.";
+            header("Location: ../../frontend/views/doctor/prescription_list.php");
+            exit;
+        } else {
+            throw new Exception("Failed to save prescription.");
+        }
+    } catch (Exception $e) {
+        $_SESSION['prescription_error'] = "Error: " . $e->getMessage();
+        header("Location: ../../frontend/views/doctor/prescription_form.php?appointment_id=$appointmentId");
+        exit;
+    }
+} else {
+    http_response_code(405);
+    echo "Method not allowed.";
+    exit;
 }
