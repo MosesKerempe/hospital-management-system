@@ -1,20 +1,13 @@
 <?php
-require_once '../config/db.php';
-require_once '../models/PrescriptionModel.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/../models/PrescriptionModel.php';
+require_once __DIR__ . '/../config/db.php';
+
+$model = new PrescriptionModel($conn);
+$data = $model->getAllPrescriptions();
 
 header('Content-Type: application/json');
-
-try {
-    $model = new PrescriptionModel($conn);
-    $prescriptions = $model->getAllPrescriptions();
-
-    echo json_encode([
-        'status' => 'success',
-        'data' => $prescriptions
-    ]);
-} catch (PDOException $e) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Failed to load prescriptions: ' . $e->getMessage()
-    ]);
-}
+echo json_encode(['status' => 'success', 'data' => $data]);

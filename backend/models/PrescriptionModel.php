@@ -1,5 +1,4 @@
 <?php
-// backend/models/PrescriptionModel.php
 
 class PrescriptionModel {
     private $conn;
@@ -9,31 +8,33 @@ class PrescriptionModel {
     }
 
     public function addPrescription($data) {
-        $sql = "INSERT INTO Prescription (DoctorName, PatientID, FirstName, LastName, AppointmentDate, AppointmentTime, Disease, Allergy, Prescription)
-                VALUES (:DoctorName, :PatientID, :FirstName, :LastName, :AppointmentDate, :AppointmentTime, :Disease, :Allergy, :Prescription)";
+        $sql = "INSERT INTO Prescription (
+            DoctorName, PatientID, AppointmentID, FirstName, LastName, 
+            AppointmentDate, AppointmentTime, Disease, Allergy, Prescription
+        ) VALUES (
+            :DoctorName, :PatientID, :AppointmentID, :FirstName, :LastName, 
+            :AppointmentDate, :AppointmentTime, :Disease, :Allergy, :Prescription
+        )";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute($data);
     }
 
     public function getAllPrescriptions() {
-        $sql = "SELECT * FROM Prescription ORDER BY AppointmentDate DESC, AppointmentTime DESC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getPrescriptionsByPatientId($patientId) {
-        $sql = "SELECT * FROM Prescription WHERE PatientID = :patientId ORDER BY AppointmentDate DESC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':patientId', $patientId, PDO::PARAM_INT);
+        $stmt = $this->conn->prepare("SELECT * FROM Prescription ORDER BY AppointmentDate DESC");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getPrescriptionsByDoctor($doctorName) {
-        $sql = "SELECT * FROM Prescription WHERE DoctorName = :doctorName ORDER BY AppointmentDate DESC";
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare("SELECT * FROM Prescription WHERE DoctorName = :doctorName ORDER BY AppointmentDate DESC");
         $stmt->bindParam(':doctorName', $doctorName);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getPrescriptionsByPatientId($patientId) {
+        $stmt = $this->conn->prepare("SELECT * FROM Prescription WHERE PatientID = :patientId ORDER BY AppointmentDate DESC");
+        $stmt->bindParam(':patientId', $patientId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
